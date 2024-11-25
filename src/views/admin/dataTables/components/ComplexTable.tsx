@@ -1,156 +1,172 @@
-import { Box, Flex, Icon, Progress, Table, Tbody, Td, Text, Th, Thead, Tr, useColorModeValue } from '@chakra-ui/react';
+import React, { useEffect, useState } from 'react';
+import {
+	Box,
+	Flex,
+	Icon,
+	Table,
+	Tbody,
+	Td,
+	Text,
+	Th,
+	Thead,
+	Tr,
+	useColorModeValue
+} from '@chakra-ui/react';
 import {
 	createColumnHelper,
 	flexRender,
 	getCoreRowModel,
-	getSortedRowModel,
-	SortingState,
 	useReactTable
 } from '@tanstack/react-table';
-// Custom components
+import { MdCancel, MdCheckCircle, MdOutlineError } from 'react-icons/md';
+import axios from 'axios';
 import Card from 'components/card/Card';
 import Menu from 'components/menu/MainMenu';
-import * as React from 'react';
-// Assets
-import { MdCancel, MdCheckCircle, MdOutlineError } from 'react-icons/md';
 
-
-
-type RowObj = {
+type FishType = {
+	id: number;
 	name: string;
-	status: string;
-	date: string; 
-	progress: number;
+	price: string;
+	ukuran_awal: string;
+	waktu_panen: string;
+	ukuran_panen: string;
+	stocking_density: string;
+	fcr: string;
+	fish_food_id: string;
+	waktu_sampling: string;
+	created_at: string | null;
+	updated_at: string;
 };
 
-const columnHelper = createColumnHelper<RowObj>();
+const columnHelper = createColumnHelper<FishType>();
 
-// const columns = columnsDataCheck;
-export default function ComplexTable(props: { tableData: any }) {
-	const { tableData } = props;
-	const [ sorting, setSorting ] = React.useState<SortingState>([]);
+const ComplexTable: React.FC = () => {
+	const [data, setData] = useState<FishType[]>([]);
+	const [loading, setLoading] = useState<boolean>(true);
+	const [error, setError] = useState<string | null>(null);
 	const textColor = useColorModeValue('secondaryGray.900', 'white');
 	const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
-	let defaultData = tableData;
+
+	useEffect(() => {
+		const fetchData = async () => {
+			try {
+				const response = await axios.get('https://api2.nokt.tech/fishtypes');
+				setData(response.data.fishTypes);
+			} catch (err) {
+				setError('Failed to fetch data');
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		fetchData();
+	}, []);
+
 	const columns = [
 		columnHelper.accessor('name', {
 			id: 'name',
 			header: () => (
 				<Text
-					justifyContent='space-between'
-					align='center'
+					justifyContent="space-between"
+					align="center"
 					fontSize={{ sm: '10px', lg: '12px' }}
-					color='gray.400'>
+					color="gray.400">
 					NAME
 				</Text>
 			),
-			cell: (info: any) => (
-				<Flex align='center'>
-					<Text color={textColor} fontSize='sm' fontWeight='700'>
+			cell: (info) => (
+				<Flex align="center">
+					<Text color={textColor} fontSize="sm" fontWeight="700">
 						{info.getValue()}
 					</Text>
 				</Flex>
-			)
+			),
 		}),
-		columnHelper.accessor('status', {
-			id: 'status',
+		columnHelper.accessor('price', {
+			id: 'price',
 			header: () => (
 				<Text
-					justifyContent='space-between'
-					align='center'
+					justifyContent="space-between"
+					align="center"
 					fontSize={{ sm: '10px', lg: '12px' }}
-					color='gray.400'>
-					STATUS
+					color="gray.400">
+					PRICE
 				</Text>
 			),
 			cell: (info) => (
-			<Flex align='center'>
-				<Icon
-					w='24px'
-					h='24px'
-					me='5px'
-					color={
-						info.getValue() === 'Approved' ? (
-							'green.500'
-						) : info.getValue() === 'Disable' ? (
-							'red.500'
-						) : info.getValue() === 'Error' ? (
-							'orange.500'
-						) : null
-					}
-					as={
-						info.getValue() === 'Approved' ? (
-							MdCheckCircle
-						) : info.getValue() === 'Disable' ? (
-							MdCancel
-						) : info.getValue() === 'Error' ? (
-							MdOutlineError
-						) : null
-					}
-				/>
-				<Text color={textColor} fontSize='sm' fontWeight='700'>
-					{info.getValue()}
+				<Text color={textColor} fontSize="sm" fontWeight="700">
+					Rp. {info.getValue()}
 				</Text>
-			</Flex> 
-			)
+			),
 		}),
-		columnHelper.accessor('date', {
-			id: 'date',
+		columnHelper.accessor('ukuran_awal', {
+			id: 'ukuran_awal',
 			header: () => (
 				<Text
-					justifyContent='space-between'
-					align='center'
+					justifyContent="space-between"
+					align="center"
 					fontSize={{ sm: '10px', lg: '12px' }}
-					color='gray.400'>
-					DATE
+					color="gray.400">
+					UKURAN AWAL
 				</Text>
 			),
 			cell: (info) => (
-				<Text color={textColor} fontSize='sm' fontWeight='700'>
-					{info.getValue()}
+				<Text color={textColor} fontSize="sm" fontWeight="700">
+					{info.getValue()} gram
 				</Text>
-			)
+			),
 		}),
-		columnHelper.accessor('progress', {
-			id: 'progress',
+		columnHelper.accessor('waktu_panen', {
+			id: 'waktu_panen',
 			header: () => (
 				<Text
-					justifyContent='space-between'
-					align='center'
+					justifyContent="space-between"
+					align="center"
 					fontSize={{ sm: '10px', lg: '12px' }}
-					color='gray.400'>
-					PROGRESS
+					color="gray.400">
+					WAKTU PANEN
 				</Text>
 			),
 			cell: (info) => (
-				<Flex align='center'>
-					<Progress variant='table' colorScheme='brandScheme' h='8px' w='108px' value={info.getValue()} />
-				</Flex>
-			)
-		})
+				<Text color={textColor} fontSize="sm" fontWeight="700">
+					{info.getValue()} months
+				</Text>
+			),
+		}),
 	];
-	const [ data, setData ] = React.useState(() => [ ...defaultData ]);
+
 	const table = useReactTable({
 		data,
 		columns,
-		state: {
-			sorting
-		},
-		onSortingChange: setSorting,
 		getCoreRowModel: getCoreRowModel(),
-		getSortedRowModel: getSortedRowModel(),
-		debugTable: true
 	});
+
+	if (loading) {
+		return (
+			<Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+				<Text>Loading...</Text>
+			</Box>
+		);
+	}
+
+	if (error) {
+		return (
+			<Box display="flex" justifyContent="center" alignItems="center" height="100vh" color="red.500">
+				<Text>{error}</Text>
+			</Box>
+		);
+	}
+
 	return (
-		<Card flexDirection='column' w='100%' px='0px' overflowX={{ sm: 'scroll', lg: 'hidden' }}>
-			<Flex px='25px' mb="8px" justifyContent='space-between' align='center'>
-				<Text color={textColor} fontSize='22px' fontWeight='700' lineHeight='100%'>
-					Complex Table
+		<Card flexDirection="column" w="100%" px="0px" overflowX={{ sm: 'scroll', lg: 'hidden' }}>
+			<Flex px="25px" mb="8px" justifyContent="space-between" align="center">
+				<Text color={textColor} fontSize="22px" fontWeight="700" lineHeight="100%">
+					Complex Table - Fish Types
 				</Text>
 				<Menu />
 			</Flex>
 			<Box>
-				<Table variant='simple' color='gray.500' mb='24px' mt="12px">
+				<Table variant="simple" color="gray.500" mb="24px" mt="12px">
 					<Thead>
 						{table.getHeaderGroups().map((headerGroup) => (
 							<Tr key={headerGroup.id}>
@@ -159,19 +175,16 @@ export default function ComplexTable(props: { tableData: any }) {
 										<Th
 											key={header.id}
 											colSpan={header.colSpan}
-											pe='10px'
+											pe="10px"
 											borderColor={borderColor}
-											cursor='pointer'
+											cursor="pointer"
 											onClick={header.column.getToggleSortingHandler()}>
 											<Flex
-												justifyContent='space-between'
-												align='center'
+												justifyContent="space-between"
+												align="center"
 												fontSize={{ sm: '10px', lg: '12px' }}
-												color='gray.400'>
-												{flexRender(header.column.columnDef.header, header.getContext())}{{
-													asc: '',
-													desc: '',
-												}[header.column.getIsSorted() as string] ?? null}
+												color="gray.400">
+												{flexRender(header.column.columnDef.header, header.getContext())}
 											</Flex>
 										</Th>
 									);
@@ -180,7 +193,7 @@ export default function ComplexTable(props: { tableData: any }) {
 						))}
 					</Thead>
 					<Tbody>
-						{table.getRowModel().rows.slice(0, 11).map((row) => {
+						{table.getRowModel().rows.map((row) => {
 							return (
 								<Tr key={row.id}>
 									{row.getVisibleCells().map((cell) => {
@@ -189,7 +202,7 @@ export default function ComplexTable(props: { tableData: any }) {
 												key={cell.id}
 												fontSize={{ sm: '14px' }}
 												minW={{ sm: '150px', md: '200px', lg: 'auto' }}
-												borderColor='transparent'>
+												borderColor="transparent">
 												{flexRender(cell.column.columnDef.cell, cell.getContext())}
 											</Td>
 										);
@@ -202,5 +215,6 @@ export default function ComplexTable(props: { tableData: any }) {
 			</Box>
 		</Card>
 	);
-}
- 
+};
+
+export default ComplexTable;
